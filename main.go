@@ -1,6 +1,7 @@
 package main
 
 import "os"
+import "gopkg.in/mgo.v2"
 import "github.com/zenazn/goji"
 
 const (
@@ -24,6 +25,18 @@ func main() {
 
 	mdb := NewMongoDB(dburl, dbname)
 	defer mdb.session.Close()
+
+	mdb.session.DB(mdb.name).C("tokens").EnsureIndex(mgo.Index{
+		Key: []string{"secret", "user_id"},
+	})
+
+	mdb.session.DB(mdb.name).C("boards").EnsureIndex(mgo.Index{
+		Key: []string{"members.user_id"},
+	})
+
+	mdb.session.DB(mdb.name).C("tokens").EnsureIndex(mgo.Index{
+		Key: []string{"board_id"},
+	})
 
 	goji.Get("/users",
 		GetUsers)
